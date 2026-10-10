@@ -2,8 +2,8 @@ class Node:
     def __init__(self, row, col, width, total_rows):
         self.row = row
         self.col = col
-        self.x = row * width
-        self.y = col * width
+        self.x = col * width
+        self.y = row * width
         self.color = (255, 255, 255)
         self.rect_width = width
         self.total_rows = total_rows
@@ -13,6 +13,7 @@ class Node:
         self.f_cost =float("inf")
         self.neighbours = []
         self.from_node = None
+
 
     def get_pos(self):
         return self.row, self.col
