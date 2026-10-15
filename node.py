@@ -4,7 +4,7 @@ class Node:
         self.col = col
         self.x = col * width
         self.y = row * width
-        self.color = (255, 255, 255)
+        self.color = (22, 24, 29)
         self.rect_width = width
         self.total_rows = total_rows
 
@@ -19,41 +19,41 @@ class Node:
         return self.row, self.col
 
     def is_closed(self):
-        return self.color == (255, 0, 0)
+        return self.color == (30, 42, 56)
 
     def is_open(self):
-        return self.color == (0, 255, 0)
+        return self.color == (41, 75, 110)
 
     def is_barrier(self):
-        return self.color == (0, 0, 0)
+        return self.color == (70, 75, 85)
 
     def is_start(self):
-        return self.color == (255, 165, 0)
+        return self.color == (212, 143, 56)
 
     def is_end(self):
-        return self.color == (128, 0, 128)
+        return self.color == (46, 160, 115)
 
 
     def make_closed(self):
-        self.color = (255, 0, 0)
+        self.color = (30, 42, 56)
 
     def make_open(self):
-        self.color = (0, 255, 0)
+        self.color = (41, 75, 110)
 
     def make_barrier(self):
-        self.color = (0, 0, 0)
+        self.color = (70, 75, 85)
 
     def make_start(self):
-        self.color = (255, 165, 0)
+        self.color = (212, 143, 56)
 
     def make_end(self):
-        self.color = (128, 0, 128)
+        self.color = (46, 160, 115)
 
     def make_path(self):
-        self.color = (0, 0, 255)  # Blue: Final computed path
+        self.color = (120, 110, 235)  # Blue: Final computed path
 
     def reset(self):
-        self.color = (255, 255, 255)
+        self.color = (22, 24, 29)
 
     def draw(self, win):
         import pygame

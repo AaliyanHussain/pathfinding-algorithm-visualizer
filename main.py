@@ -1,9 +1,9 @@
 from node import Node
 from queue import PriorityQueue
 
-def make_grid(rows, width):
+def make_grid(rows, grid_width):
     grid = []
-    gap = width // rows
+    gap = grid_width // rows
 
     for i in range(rows):
         grid.append([])
@@ -15,10 +15,10 @@ def make_grid(rows, width):
 import pygame
 import sys
 pygame.init()
-WIN = pygame.display.set_mode((800, 800))
+WIN = pygame.display.set_mode((1600, 950))
 pygame.display.set_caption("Pathfinding Algorithm Visualizer by Aaliyan Hussain")
-def draw(win, grid, rows, width):
-    WIN.fill((255, 255, 255))
+def draw(win, grid, rows, grid_width):
+    WIN.fill((22, 24, 29))
 
     for row in grid:
         for node in row:
@@ -26,8 +26,8 @@ def draw(win, grid, rows, width):
 
     pygame.display.update()
 
-def get_clicked_pos(pos, rows, width):
-    gap = width // rows
+def get_clicked_pos(pos, rows, grid_width):
+    gap = grid_width // rows
     x, y = pos
     row = y // gap
     col = x // gap
@@ -95,16 +95,16 @@ def algorithm(draw, grid, start, end):
 
     return False
 
-def main(win, width):
-    ROWS = 50
-    grid = make_grid(ROWS, width)
+def main(win, grid_width):
+    ROWS = 70
+    grid = make_grid(ROWS, grid_width)
 
     start = None
     end = None 
 
     run = True
     while run:
-        draw(win, grid, ROWS, width)
+        draw(win, grid, ROWS, grid_width)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
               run = False
@@ -114,43 +114,41 @@ def main(win, width):
                     for row in grid:
                         for node in row:
                             node.update_neighbors(grid)
-                    algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    algorithm(lambda: draw(win, grid, ROWS, grid_width), grid, start, end)
 
                 if event.key == pygame.K_c:
                     start = None
                     end = None
-                    grid = make_grid(ROWS, width)   
+                    grid = make_grid(ROWS, grid_width)   
                     
             if pygame.mouse.get_pressed()[0]:  # Left click
                 pos = pygame.mouse.get_pos()
-                row, col = get_clicked_pos(pos, ROWS, width)
-                node = grid[row][col]
+                if pos[0] < grid_width:
+                    row, col = get_clicked_pos(pos, ROWS, grid_width)
+                    node = grid[row][col]
+                 
+                    if not start and node != end:
+                        start = node
+                        start.make_start()
 
-            # 1st click: Set Start node (if not already set and not the end node)
-                if not start and node != end:
-                    start = node
-                    start.make_start()
-
-            # 2nd click: Set End node (if not already set and not the start node)
-                elif not end and node != start:
-                    end = node
-                    end.make_end()
-
-            # Any other click: Draw barriers (walls), as long as it's not start or end
-                elif node != end and node != start:
-                    node.make_barrier()
-
-        # Check if the right mouse button is pressed down (erasing nodes)
+                    elif not end and node != start:
+                        end = node
+                        end.make_end()
+            
+                    elif node != end and node != start:
+                        node.make_barrier()
+       
             elif pygame.mouse.get_pressed()[2]:  # Right click
                pos = pygame.mouse.get_pos()
-               row, col = get_clicked_pos(pos, ROWS, width)
-               node = grid[row][col]
-               node.reset()  # Clears the node back to white
+               if pos[0] < grid_width:
+                   row, col = get_clicked_pos(pos, ROWS, grid_width)
+                   node = grid[row][col]
+                   node.reset()  # Clears the node back to white
             
-               if node == start:
-                    start = None
-               elif node == end:
-                    end = None         
+                   if node == start:
+                       start = None
+                   elif node == end:
+                       end = None         
     pygame.quit()
 
-main(WIN, 800)
+main(WIN, 1600)
