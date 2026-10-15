@@ -28,9 +28,13 @@ def draw(win, grid, rows, width):
 
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
-    y, x = pos
+    x, y = pos
     row = y // gap
     col = x // gap
+    if row >= rows:
+        row = rows - 1
+    if col >= rows:
+        col = rows - 1    
     return row,col
 
 def reconstruct_path(came_from, current, draw):
@@ -53,7 +57,7 @@ def algorithm(draw, grid, start, end):
     g_score[start] = 0
 
     f_score = {node: float("inf") for row in grid for node in row}
-    f_score[start] = heuristic(start.get.pos(), end.get_pos())
+    f_score[start] = heuristic(start.get_pos(), end.get_pos())
 
     open_set_hash = {start}
 
