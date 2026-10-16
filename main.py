@@ -1,13 +1,14 @@
 from node import Node
 from queue import PriorityQueue
 
-def make_grid(rows, grid_width):
+def make_grid(rows, total_width, total_height):
     grid = []
-    gap = grid_width // rows
+    gap = total_height // rows
+    cols = total_width // gap
 
     for i in range(rows):
         grid.append([])
-        for j in range(rows):
+        for j in range(cols):
             node = Node(i, j, gap, rows)
             grid[i].append(node)
 
@@ -15,27 +16,31 @@ def make_grid(rows, grid_width):
 import pygame
 import sys
 pygame.init()
+pygame.mixer.init()
 WIN = pygame.display.set_mode((1600, 950))
 pygame.display.set_caption("Pathfinding Algorithm Visualizer by Aaliyan Hussain")
-def draw(win, grid, rows, grid_width):
+def draw(win, grid, rows, total_width, reset_btn_img):
     WIN.fill((22, 24, 29))
 
     for row in grid:
         for node in row:
             node.draw(win)
+    win.blit(reset_btn_img, (1500, 20))
 
     pygame.display.update()
 
-def get_clicked_pos(pos, rows, grid_width):
-    gap = grid_width // rows
+def get_clicked_pos(pos, rows, total_width, total_height):
+    gap = total_height // rows
     x, y = pos
     row = y // gap
     col = x // gap
-    if row >= rows:
-        row = rows - 1
-    if col >= rows:
-        col = rows - 1    
-    return row,col
+
+    max_rows = rows
+    max_cols = total_width // gap
+
+    row = max(0, min(row, max_rows - 1))
+    col = max(0, min(col, max_cols - 1))
+    return row, col
 
 def reconstruct_path(came_from, current, draw):
     while current in came_from:
@@ -58,13 +63,14 @@ def algorithm(draw, grid, start, end):
 
     f_score = {node: float("inf") for row in grid for node in row}
     f_score[start] = heuristic(start.get_pos(), end.get_pos())
-
     open_set_hash = {start}
+    step = 0
 
     while not open_set.empty():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                sys.exit()
 
         current = open_set.get()[2]
         open_set_hash.remove(current)
@@ -88,23 +94,37 @@ def algorithm(draw, grid, start, end):
                     open_set_hash.add(neighbor)
                     neighbor.make_open()
 
-        draw()
+        step += 1
+        if step % 5 == 0:
+            draw()
 
         if current != start:
             current.make_closed()
 
     return False
 
-def main(win, grid_width):
-    ROWS = 70
-    grid = make_grid(ROWS, grid_width)
+def main(win, total_width):
+    ROWS = 50
+    total_height = 950
+    grid = make_grid(ROWS, 1600, 950)
+    start = grid[5][7]
+    start.make_start()
 
-    start = None
-    end = None 
+    cols = len(grid[0])
+    end = grid[ROWS - 6][cols - 6]
+    end.make_end()
+    
+
+    reset_btn_img = pygame.image.load('reset_btn.png').convert_alpha()
+    reset_btn_img = pygame.transform.scale(reset_btn_img, (70, 70))
+    btn_rect = pygame.Rect(1500, 20, 70, 70)
+
+    is_drawing = False
 
     run = True
+    
     while run:
-        draw(win, grid, ROWS, grid_width)
+        draw(win, grid, ROWS, total_width, reset_btn_img)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
               run = False
@@ -114,34 +134,32 @@ def main(win, grid_width):
                     for row in grid:
                         for node in row:
                             node.update_neighbors(grid)
-                    algorithm(lambda: draw(win, grid, ROWS, grid_width), grid, start, end)
+                    algorithm(lambda: draw(win, grid, ROWS, total_width, reset_btn_img), grid, start, end)
 
                 if event.key == pygame.K_c:
                     start = None
                     end = None
-                    grid = make_grid(ROWS, grid_width)   
+                    grid = make_grid(ROWS, 1600, 950)   
                     
             if pygame.mouse.get_pressed()[0]:  # Left click
                 pos = pygame.mouse.get_pos()
-                if pos[0] < grid_width:
-                    row, col = get_clicked_pos(pos, ROWS, grid_width)
-                    node = grid[row][col]
-                 
-                    if not start and node != end:
-                        start = node
-                        start.make_start()
 
-                    elif not end and node != start:
-                        end = node
-                        end.make_end()
-            
-                    elif node != end and node != start:
+                if btn_rect.collidepoint(pos):
+                    grid = make_grid(ROWS, 1600, total_height)
+                    start = grid[5][7]
+                    start.make_start()
+                    end = grid[ROWS - 6][len(grid[0]) - 6]
+                    end.make_end()
+                elif pos[0] < total_width:
+                    row, col = get_clicked_pos(pos, ROWS, 1600, total_height)
+                    node = grid[row][col]
+                    if node != end and node != start and not node.is_barrier():
                         node.make_barrier()
        
             elif pygame.mouse.get_pressed()[2]:  # Right click
                pos = pygame.mouse.get_pos()
-               if pos[0] < grid_width:
-                   row, col = get_clicked_pos(pos, ROWS, grid_width)
+               if pos[0] < total_width:
+                   row, col = get_clicked_pos(pos, ROWS, 1600, 950)
                    node = grid[row][col]
                    node.reset()  # Clears the node back to white
             
