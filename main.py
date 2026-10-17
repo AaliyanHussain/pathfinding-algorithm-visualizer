@@ -16,9 +16,9 @@ def make_grid(rows, total_width, total_height):
 import pygame
 import sys
 pygame.init()
-pygame.mixer.init()
 WIN = pygame.display.set_mode((1600, 950))
 pygame.display.set_caption("Pathfinding Algorithm Visualizer by Aaliyan Hussain")
+
 def draw(win, grid, rows, total_width, reset_btn_img):
     WIN.fill((22, 24, 29))
 
@@ -125,6 +125,16 @@ def main(win, total_width):
     
     while run:
         draw(win, grid, ROWS, total_width, reset_btn_img)
+
+        if is_drawing:
+            pos = pygame.mouse.get_pos()
+            if pos[0] < total_width:
+                row, col = get_clicked_pos(pos, ROWS, 1600, total_height)
+                node = grid[row][col]
+                if node != end and node != start and not node.is_barrier():
+                    node.make_barrier()
+                    
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
               run = False
@@ -137,36 +147,38 @@ def main(win, total_width):
                     algorithm(lambda: draw(win, grid, ROWS, total_width, reset_btn_img), grid, start, end)
 
                 if event.key == pygame.K_c:
-                    start = None
-                    end = None
-                    grid = make_grid(ROWS, 1600, 950)   
-                    
-            if pygame.mouse.get_pressed()[0]:  # Left click
-                pos = pygame.mouse.get_pos()
-
-                if btn_rect.collidepoint(pos):
-                    grid = make_grid(ROWS, 1600, total_height)
-                    start = grid[5][7]
+                    is_drawing = False
+                    grid = make_grid(ROWS, 1600, total_height)   
+                    start = grid[5][5]
                     start.make_start()
                     end = grid[ROWS - 6][len(grid[0]) - 6]
                     end.make_end()
-                elif pos[0] < total_width:
-                    row, col = get_clicked_pos(pos, ROWS, 1600, total_height)
-                    node = grid[row][col]
-                    if node != end and node != start and not node.is_barrier():
-                        node.make_barrier()
-       
-            elif pygame.mouse.get_pressed()[2]:  # Right click
+                    
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left click
+                    pos = pygame.mouse.get_pos()
+                    if btn_rect.collidepoint(pos):
+                        is_drawing = False
+                        grid = make_grid(ROWS, 1600, total_height)
+                        start = grid[5][5]
+                        start.make_start()
+                        end = grid[ROWS - 6][len(grid[0]) - 6]
+                        end.make_end()
+                    elif pos[0] < total_width:
+                        # Toggle drawing mode on/off with a single click
+                        is_drawing = not is_drawing
+
+            elif pygame.mouse.get_pressed()[2]:  # Right click (stays manual erase)
                pos = pygame.mouse.get_pos()
                if pos[0] < total_width:
-                   row, col = get_clicked_pos(pos, ROWS, 1600, 950)
+                   row, col = get_clicked_pos(pos, ROWS, 1600, total_height)
                    node = grid[row][col]
-                   node.reset()  # Clears the node back to white
-            
+                   node.reset()  
+                   
                    if node == start:
                        start = None
                    elif node == end:
-                       end = None         
+                       end = None      
     pygame.quit()
 
 main(WIN, 1600)
